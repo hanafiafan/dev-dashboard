@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Save, Github, MessageCircle, Globe, Mail, MapPin } from "lucide-react";
+import { Save, Github, MessageCircle, Globe, Mail, MapPin, Eye } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button, Card, Field, Input, Textarea } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import { Chip } from "@/components/common";
 import { Avatar } from "@/components/icons";
 import { useSnapshot, useUpdateProfile } from "@/lib/queries";
@@ -126,8 +127,48 @@ export default function ProfilePage() {
             </Field>
           </div>
         </Card>
+
+        {/* Visibilitas halaman publik */}
+        <Card className="p-6 lg:col-span-3">
+          <div className="mb-4 flex items-center gap-2">
+            <Eye className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-semibold">Visibilitas Halaman Publik</h3>
+          </div>
+          <div className="grid gap-1.5 sm:grid-cols-2">
+            <VisibilityToggle
+              label="Kalender publik"
+              checked={form.showCalendar !== false}
+              onChange={(v) => set("showCalendar", v)}
+            />
+            <VisibilityToggle
+              label="Chart Tech Stack Terpopuler"
+              checked={form.showTechStack !== false}
+              onChange={(v) => set("showTechStack", v)}
+            />
+          </div>
+        </Card>
       </div>
     </>
+  );
+}
+
+function VisibilityToggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-[hsl(var(--card)/0.5)] px-3 py-2 text-left text-sm transition hover:bg-muted/60"
+    >
+      <span className="font-medium">{label}</span>
+      <span className={cn("relative h-5 w-9 shrink-0 rounded-full transition-colors", checked ? "bg-primary" : "bg-muted")}>
+        <span
+          className={cn(
+            "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all",
+            checked ? "left-[18px]" : "left-0.5",
+          )}
+        />
+      </span>
+    </button>
   );
 }
 

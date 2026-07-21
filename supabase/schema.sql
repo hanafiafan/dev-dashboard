@@ -25,6 +25,8 @@ create table if not exists public.profile (
   github        text not null default '',
   linkedin      text not null default '',
   website       text not null default '',
+  "showCalendar"  boolean not null default true,
+  "showTechStack" boolean not null default true,
   constraint single_profile check (id = 1)
 );
 

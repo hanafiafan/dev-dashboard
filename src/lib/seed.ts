@@ -22,6 +22,8 @@ export function seedSnapshot(): Snapshot {
       github: "https://github.com/hanafiafan",
       linkedin: "https://linkedin.com/in/hanafiafan",
       website: "https://hanafiafan.dev",
+      showCalendar: true,
+      showTechStack: true,
     },
     projects: [
       {

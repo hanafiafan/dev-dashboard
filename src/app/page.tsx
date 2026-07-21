@@ -168,14 +168,22 @@ export default function PublicHome() {
                 </ChartCard>
               </div>
 
-              <div className="mt-3 grid items-stretch gap-3 lg:grid-cols-3">
-                <div className="lg:col-span-2">
-                  <PublicCalendar projects={publicProjects} tasks={publicTasks} />
+              {(profile?.showCalendar !== false || profile?.showTechStack !== false) && (
+                <div className="mt-3 grid items-stretch gap-3 lg:grid-cols-3">
+                  {profile?.showCalendar !== false && (
+                    <div className={profile?.showTechStack !== false ? "lg:col-span-2" : "lg:col-span-3"}>
+                      <PublicCalendar projects={publicProjects} tasks={publicTasks} />
+                    </div>
+                  )}
+                  {profile?.showTechStack !== false && (
+                    <div className={profile?.showCalendar !== false ? "" : "lg:col-span-3"}>
+                      <ChartCard icon={Layers} title="Tech Stack Terpopuler">
+                        <TechStackChart projects={publicProjects} />
+                      </ChartCard>
+                    </div>
+                  )}
                 </div>
-                <ChartCard icon={Layers} title="Tech Stack Terpopuler">
-                  <TechStackChart projects={publicProjects} />
-                </ChartCard>
-              </div>
+              )}
 
               <div className="mt-3 grid items-stretch gap-3 lg:grid-cols-3">
                 <div className="lg:col-span-2">

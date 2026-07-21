@@ -73,6 +73,10 @@ export interface Profile {
   /** Nomor WhatsApp owner (kolom DB lama bernama "linkedin"). */
   linkedin: string;
   website: string;
+  /** Tampilkan widget kalender publik di landing page? */
+  showCalendar: boolean;
+  /** Tampilkan chart Tech Stack Terpopuler di landing page? */
+  showTechStack: boolean;
 }
 
 export interface ActivityEntry {
