@@ -87,11 +87,11 @@ export default function RequestsPage() {
               </div>
             </div>
 
-            {(r.budget || r.timeline || r.referenceUrl || r.driveLink) && (
+            {(r.team || r.timeline || r.referenceUrl || r.driveLink) && (
               <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
-                {r.budget && (
+                {r.team && (
                   <span>
-                    <b className="text-foreground">Budget:</b> {r.budget}
+                    <b className="text-foreground">Tim/Bagian:</b> {r.team}
                   </span>
                 )}
                 {r.timeline && (

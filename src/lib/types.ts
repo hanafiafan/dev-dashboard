@@ -106,7 +106,8 @@ export interface ProjectRequest {
   email: string;
   company: string;
   projectType: string;
-  budget: string;
+  /** Tim / bagian internal yang mengajukan (kalau ada). */
+  team: string;
   timeline: string;
   referenceUrl: string;
   /** Link Google Drive (share access: Editor) berisi file/lampiran, pengganti upload langsung. */

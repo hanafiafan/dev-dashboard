@@ -156,7 +156,7 @@ export function seedSnapshot(): Snapshot {
         email: "budi@tokokita.id",
         company: "Toko Kita",
         projectType: "Website / Web App",
-        budget: "Rp 5 - 15 juta",
+        team: "",
         timeline: "1-2 bulan",
         referenceUrl: "",
         driveLink: "",

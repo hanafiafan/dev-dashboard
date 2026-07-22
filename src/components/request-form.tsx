@@ -16,15 +16,6 @@ const PROJECT_TYPES = [
   "Lainnya",
 ];
 
-const BUDGET_OPTIONS = [
-  "Belum tahu / didiskusikan",
-  "< Rp 5 juta",
-  "Rp 5 - 15 juta",
-  "Rp 15 - 30 juta",
-  "Rp 30 - 50 juta",
-  "> Rp 50 juta",
-];
-
 const TIMELINE_OPTIONS = ["Fleksibel", "< 2 minggu", "2-4 minggu", "1-2 bulan", "> 2 bulan"];
 
 const emptyForm: RequestInput = {
@@ -33,7 +24,7 @@ const emptyForm: RequestInput = {
   email: "",
   company: "",
   projectType: PROJECT_TYPES[0],
-  budget: BUDGET_OPTIONS[0],
+  team: "",
   timeline: TIMELINE_OPTIONS[0],
   referenceUrl: "",
   driveLink: "",
@@ -151,12 +142,8 @@ export function RequestForm() {
               ))}
             </Select>
           </Field>
-          <Field label="Estimasi Budget">
-            <Select value={form.budget} onChange={(e) => set("budget", e.target.value)}>
-              {BUDGET_OPTIONS.map((b) => (
-                <option key={b}>{b}</option>
-              ))}
-            </Select>
+          <Field label="Dari Tim / Bagian (opsional)">
+            <Input value={form.team} onChange={(e) => set("team", e.target.value)} placeholder="mis. Marketing, Finance, CRM" />
           </Field>
           <Field label="Target Timeline">
             <Select value={form.timeline} onChange={(e) => set("timeline", e.target.value)}>

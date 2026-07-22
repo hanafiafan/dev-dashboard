@@ -76,7 +76,7 @@ create table if not exists public.requests (
   email        text not null default '',
   company      text not null default '',
   "projectType" text not null default '',
-  budget       text not null default '',
+  team         text not null default '',  -- tim/bagian internal pengaju (opsional)
   timeline     text not null default '',
   "referenceUrl" text not null default '',
   "driveLink"  text not null default '',  -- Google Drive link (Editor access) in place of direct file upload
