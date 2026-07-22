@@ -109,6 +109,8 @@ export interface ProjectRequest {
   budget: string;
   timeline: string;
   referenceUrl: string;
+  /** Link Google Drive (share access: Editor) berisi file/lampiran, pengganti upload langsung. */
+  driveLink: string;
   message: string;
   attachments: RequestAttachment[];
   status: RequestStatus;

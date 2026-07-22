@@ -159,6 +159,7 @@ export function seedSnapshot(): Snapshot {
         budget: "Rp 5 - 15 juta",
         timeline: "1-2 bulan",
         referenceUrl: "",
+        driveLink: "",
         message:
           "Halo, saya butuh dibuatkan landing page untuk toko online saya beserta integrasi WhatsApp checkout. Mohon info estimasi waktu & biaya.",
         attachments: [],

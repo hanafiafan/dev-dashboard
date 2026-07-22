@@ -87,7 +87,7 @@ export default function RequestsPage() {
               </div>
             </div>
 
-            {(r.budget || r.timeline || r.referenceUrl) && (
+            {(r.budget || r.timeline || r.referenceUrl || r.driveLink) && (
               <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
                 {r.budget && (
                   <span>
@@ -102,6 +102,11 @@ export default function RequestsPage() {
                 {r.referenceUrl && (
                   <a href={r.referenceUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                     Link referensi ↗
+                  </a>
+                )}
+                {r.driveLink && (
+                  <a href={r.driveLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    Buka Google Drive ↗
                   </a>
                 )}
               </div>

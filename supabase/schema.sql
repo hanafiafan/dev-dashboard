@@ -79,6 +79,7 @@ create table if not exists public.requests (
   budget       text not null default '',
   timeline     text not null default '',
   "referenceUrl" text not null default '',
+  "driveLink"  text not null default '',  -- Google Drive link (Editor access) in place of direct file upload
   message      text not null default '',
   attachments  jsonb not null default '[]'::jsonb,   -- [{name,url,size}]
   status       text not null default 'New',          -- New | Reviewing | Accepted | Rejected | Done

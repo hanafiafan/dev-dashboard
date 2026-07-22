@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Paperclip, X, Send, CheckCircle2, MessageSquarePlus, Clock3, MessageCircle } from "lucide-react";
+import { FolderInput, Send, CheckCircle2, MessageSquarePlus, Clock3, MessageCircle } from "lucide-react";
 import { Button, Card, Field, Input, Select, Textarea } from "./ui";
 import { useCreateRequest, useSnapshot } from "@/lib/queries";
 import type { RequestInput } from "@/lib/types";
@@ -27,8 +27,6 @@ const BUDGET_OPTIONS = [
 
 const TIMELINE_OPTIONS = ["Fleksibel", "< 2 minggu", "2-4 minggu", "1-2 bulan", "> 2 bulan"];
 
-const MAX_FILE_MB = 10;
-
 const emptyForm: RequestInput = {
   name: "",
   whatsapp: "",
@@ -38,6 +36,7 @@ const emptyForm: RequestInput = {
   budget: BUDGET_OPTIONS[0],
   timeline: TIMELINE_OPTIONS[0],
   referenceUrl: "",
+  driveLink: "",
   message: "",
   attachments: [],
 };
@@ -46,25 +45,11 @@ export function RequestForm() {
   const { data } = useSnapshot();
   const create = useCreateRequest();
   const [form, setForm] = React.useState<RequestInput>(emptyForm);
-  const [files, setFiles] = React.useState<File[]>([]);
   const [error, setError] = React.useState("");
   const [done, setDone] = React.useState(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
 
   const set = <K extends keyof RequestInput>(k: K, v: RequestInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
-
-  function addFiles(list: FileList | null) {
-    if (!list) return;
-    const incoming = Array.from(list);
-    const tooBig = incoming.find((f) => f.size > MAX_FILE_MB * 1024 * 1024);
-    if (tooBig) {
-      setError(`File "${tooBig.name}" melebihi ${MAX_FILE_MB}MB.`);
-      return;
-    }
-    setError("");
-    setFiles((prev) => [...prev, ...incoming].slice(0, 5));
-  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -74,7 +59,7 @@ export function RequestForm() {
     }
     setError("");
     try {
-      await create.mutateAsync([form, files]);
+      await create.mutateAsync([form, []]);
       setDone(true);
     } catch (err) {
       setError("Gagal mengirim: " + (err as Error).message);
@@ -120,7 +105,6 @@ export function RequestForm() {
           onClick={() => {
             setDone(false);
             setForm(emptyForm);
-            setFiles([]);
           }}
         >
           Kirim request lain
@@ -181,11 +165,11 @@ export function RequestForm() {
               ))}
             </Select>
           </Field>
-          <Field label="Link Referensi (opsional)" className="sm:col-span-2">
+          <Field label="Link Referensi (opsional)">
             <Input
               value={form.referenceUrl}
               onChange={(e) => set("referenceUrl", e.target.value)}
-              placeholder="https://... (situs/desain yang jadi acuan)"
+              placeholder="https://... (situs/desain acuan)"
             />
           </Field>
         </div>
@@ -199,50 +183,21 @@ export function RequestForm() {
           />
         </Field>
 
-        {/* Attachments */}
-        <div>
-          <span className="mb-1.5 block text-xs font-medium text-muted-foreground">
-            Lampiran (foto / dokumen, maks 5 file · {MAX_FILE_MB}MB)
-          </span>
-          <input
-            ref={inputRef}
-            type="file"
-            multiple
-            accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
-            className="hidden"
-            onChange={(e) => addFiles(e.target.files)}
-          />
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-border py-3 text-sm text-muted-foreground transition hover:border-primary hover:text-primary"
-          >
-            <Paperclip className="h-4 w-4" /> Tambah lampiran
-          </button>
-          {files.length > 0 && (
-            <ul className="mt-2 space-y-1.5">
-              {files.map((f, i) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm"
-                >
-                  <Paperclip className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <span className="min-w-0 flex-1 truncate">{f.name}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {(f.size / 1024).toFixed(0)} KB
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
-                    className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-rose-600"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <Field label="Link Google Drive — file/referensi (opsional)">
+          <div className="relative">
+            <FolderInput className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={form.driveLink}
+              onChange={(e) => set("driveLink", e.target.value)}
+              placeholder="https://drive.google.com/..."
+              className="pl-9"
+            />
+          </div>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Kalau ada file (foto, dokumen, referensi), upload dulu ke Google Drive, ubah akses jadi <b>"Siapa saja
+            yang memiliki link — Editor"</b>, lalu tempel link-nya di sini.
+          </p>
+        </Field>
 
         {error && (
           <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
