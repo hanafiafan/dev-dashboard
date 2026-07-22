@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Save, Github, MessageCircle, Globe, Mail, MapPin, Eye } from "lucide-react";
+import { Save, Github, MessageCircle, Globe, Mail, MapPin, Eye, Briefcase } from "lucide-react";
 import { PageHeader } from "@/components/app-shell";
 import { Button, Card, Field, Input, Textarea } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -126,6 +126,23 @@ export default function ProfilePage() {
               <Textarea value={form.bio} onChange={(e) => set("bio", e.target.value)} className="min-h-[110px]" />
             </Field>
           </div>
+        </Card>
+
+        {/* Status ketersediaan project */}
+        <Card className="p-6 lg:col-span-3">
+          <div className="mb-4 flex items-center gap-2">
+            <Briefcase className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-semibold">Status Ketersediaan Project</h3>
+          </div>
+          <VisibilityToggle
+            label={form.acceptingProjects !== false ? "Sedang menerima project baru" : "Sedang tidak menerima project baru"}
+            checked={form.acceptingProjects !== false}
+            onChange={(v) => set("acceptingProjects", v)}
+          />
+          <p className="mt-2 text-xs text-muted-foreground">
+            Kalau dimatikan, form request di halaman publik otomatis dikunci dan pengunjung diarahkan chat WhatsApp
+            langsung — cocok dipakai saat slot pengerjaan lagi penuh.
+          </p>
         </Card>
 
         {/* Visibilitas halaman publik */}

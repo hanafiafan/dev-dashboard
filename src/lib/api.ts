@@ -339,18 +339,20 @@ class SupabaseProvider implements DataProvider {
       const { data: pub } = db.storage.from(ATTACHMENT_BUCKET).getPublicUrl(path);
       attachments.push({ name: f.name, url: pub.publicUrl, size: f.size });
     }
-    const { data, error } = await db
-      .from("requests")
-      .insert({ ...input, attachments, status: "New" })
-      .select()
-      .single();
+    // No `.select()` here on purpose: anon has no SELECT policy on requests (by design,
+    // so visitors can never read other people's submissions), and RLS blocks RETURNING
+    // for a role with no SELECT visibility — even for the row it just inserted.
+    // `id` is left out of the insert so Postgres assigns its own uuid; the id below is
+    // just a throwaway client-side placeholder for the return value (never persisted).
+    const { error } = await db.from("requests").insert({ ...input, attachments, status: "New" });
     if (error) throw error;
+    const req: ProjectRequest = { ...input, id: reqId, attachments, status: "New", createdAt: nowISO() };
     await db.from("activity").insert({
       type: "request",
       action: "created",
       message: `Request baru dari ${input.name}`,
     });
-    return data as ProjectRequest;
+    return req;
   }
 
   async updateRequest(id: string, status: RequestStatus): Promise<ProjectRequest> {

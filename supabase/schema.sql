@@ -27,6 +27,7 @@ create table if not exists public.profile (
   website       text not null default '',
   "showCalendar"  boolean not null default true,
   "showTechStack" boolean not null default true,
+  "acceptingProjects" boolean not null default true,  -- if false, public request form is locked
   constraint single_profile check (id = 1)
 );
 
@@ -73,7 +74,11 @@ create table if not exists public.requests (
   "name"       text not null,
   whatsapp     text not null default '',
   email        text not null default '',
+  company      text not null default '',
   "projectType" text not null default '',
+  budget       text not null default '',
+  timeline     text not null default '',
+  "referenceUrl" text not null default '',
   message      text not null default '',
   attachments  jsonb not null default '[]'::jsonb,   -- [{name,url,size}]
   status       text not null default 'New',          -- New | Reviewing | Accepted | Rejected | Done

@@ -80,6 +80,8 @@ export interface Profile {
   showCalendar: boolean;
   /** Tampilkan chart Tech Stack Terpopuler di landing page? */
   showTechStack: boolean;
+  /** Kalau false, form request di halaman publik dikunci ("sedang tidak menerima project"). */
+  acceptingProjects: boolean;
 }
 
 export interface ActivityEntry {
@@ -102,7 +104,11 @@ export interface ProjectRequest {
   name: string;
   whatsapp: string;
   email: string;
+  company: string;
   projectType: string;
+  budget: string;
+  timeline: string;
+  referenceUrl: string;
   message: string;
   attachments: RequestAttachment[];
   status: RequestStatus;

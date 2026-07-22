@@ -24,6 +24,7 @@ export function seedSnapshot(): Snapshot {
       website: "https://hanafiafan.dev",
       showCalendar: true,
       showTechStack: true,
+      acceptingProjects: true,
     },
     projects: [
       {
@@ -153,7 +154,11 @@ export function seedSnapshot(): Snapshot {
         name: "Budi Santoso",
         whatsapp: "+6281234567890",
         email: "budi@tokokita.id",
+        company: "Toko Kita",
         projectType: "Website / Web App",
+        budget: "Rp 5 - 15 juta",
+        timeline: "1-2 bulan",
+        referenceUrl: "",
         message:
           "Halo, saya butuh dibuatkan landing page untuk toko online saya beserta integrasi WhatsApp checkout. Mohon info estimasi waktu & biaya.",
         attachments: [],

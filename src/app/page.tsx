@@ -22,7 +22,6 @@ import {
   BarChart3,
   Gauge,
   Layers,
-  ChevronDown,
   ChevronLeft,
   ChevronRight as ChevronRightIcon,
   ListChecks,
@@ -56,16 +55,7 @@ const NAV_LINKS = [
   { href: "#stats", label: "Statistik" },
   { href: "#services", label: "Layanan" },
   { href: "#work", label: "Karya" },
-  { href: "#faq", label: "FAQ" },
   { href: "#request", label: "Kontak" },
-];
-
-const FAQS: { q: string; a: string }[] = [
-  { q: "Berapa lama pengerjaan satu project?", a: "Tergantung kompleksitas — landing page 1–2 minggu, web/mobile app 4–8 minggu. Estimasi pasti diberikan setelah brief & scope jelas." },
-  { q: "Bagaimana alur kerjanya?", a: "Brief → penawaran & timeline → desain → development → revisi → handover. Progres di-update rutin dan bisa kamu pantau langsung." },
-  { q: "Apakah bisa revisi?", a: "Bisa. Setiap milestone ada sesi revisi sesuai kesepakatan supaya hasil akhirnya benar-benar pas." },
-  { q: "Teknologi apa yang dipakai?", a: "Next.js, React, Laravel, Flutter, PostgreSQL, dan stack modern lain yang paling cocok dengan kebutuhan project kamu." },
-  { q: "Bagaimana cara mulai?", a: "Isi form request di bawah beserta lampiran kalau ada. Saya akan menghubungi kamu lewat WhatsApp untuk diskusi lebih lanjut." },
 ];
 
 export default function PublicHome() {
@@ -257,20 +247,6 @@ export default function PublicHome() {
             </div>
           </section>
         )}
-
-        {/* ===== FAQ ===== */}
-        <section id="faq" className="scroll-mt-20 py-10">
-          <Reveal>
-            <SectionTitle eyebrow="FAQ" title="Pertanyaan yang sering ditanya" />
-          </Reveal>
-          <div className="mx-auto mt-8 max-w-2xl space-y-2.5">
-            {FAQS.map((f, i) => (
-              <Reveal key={f.q} delay={i * 60}>
-                <FaqItem q={f.q} a={f.a} />
-              </Reveal>
-            ))}
-          </div>
-        </section>
 
         {/* ===== REQUEST ===== */}
         <section id="request" className="scroll-mt-20 py-12">
@@ -548,18 +524,6 @@ function ActiveProjectCalendar({ projects }: { projects: Project[] }) {
         ))}
       </div>
     </Card>
-  );
-}
-
-function FaqItem({ q, a }: { q: string; a: string }) {
-  return (
-    <details className="group glass overflow-hidden rounded-xl">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-medium [&::-webkit-details-marker]:hidden">
-        {q}
-        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 group-open:rotate-180" />
-      </summary>
-      <div className="px-5 pb-4 text-sm leading-relaxed text-muted-foreground">{a}</div>
-    </details>
   );
 }
 

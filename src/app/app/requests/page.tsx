@@ -63,6 +63,7 @@ export default function RequestsPage() {
                 </div>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {r.projectType} · {relativeTime(r.createdAt)}
+                  {r.company ? ` · ${r.company}` : ""}
                 </p>
               </div>
 
@@ -85,6 +86,26 @@ export default function RequestsPage() {
                 </button>
               </div>
             </div>
+
+            {(r.budget || r.timeline || r.referenceUrl) && (
+              <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
+                {r.budget && (
+                  <span>
+                    <b className="text-foreground">Budget:</b> {r.budget}
+                  </span>
+                )}
+                {r.timeline && (
+                  <span>
+                    <b className="text-foreground">Timeline:</b> {r.timeline}
+                  </span>
+                )}
+                {r.referenceUrl && (
+                  <a href={r.referenceUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    Link referensi ↗
+                  </a>
+                )}
+              </div>
+            )}
 
             <p className="mt-3 whitespace-pre-wrap rounded-lg bg-muted/40 px-4 py-3 text-sm leading-relaxed">
               {r.message}

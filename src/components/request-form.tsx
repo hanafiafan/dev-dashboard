@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Paperclip, X, Send, CheckCircle2, MessageSquarePlus } from "lucide-react";
+import { Paperclip, X, Send, CheckCircle2, MessageSquarePlus, Clock3, MessageCircle } from "lucide-react";
 import { Button, Card, Field, Input, Select, Textarea } from "./ui";
-import { useCreateRequest } from "@/lib/queries";
+import { useCreateRequest, useSnapshot } from "@/lib/queries";
 import type { RequestInput } from "@/lib/types";
+import { waLink } from "@/lib/utils";
 
 const PROJECT_TYPES = [
   "Website / Web App",
@@ -15,18 +16,36 @@ const PROJECT_TYPES = [
   "Lainnya",
 ];
 
+const BUDGET_OPTIONS = [
+  "Belum tahu / didiskusikan",
+  "< Rp 5 juta",
+  "Rp 5 - 15 juta",
+  "Rp 15 - 30 juta",
+  "Rp 30 - 50 juta",
+  "> Rp 50 juta",
+];
+
+const TIMELINE_OPTIONS = ["Fleksibel", "< 2 minggu", "2-4 minggu", "1-2 bulan", "> 2 bulan"];
+
 const MAX_FILE_MB = 10;
 
+const emptyForm: RequestInput = {
+  name: "",
+  whatsapp: "",
+  email: "",
+  company: "",
+  projectType: PROJECT_TYPES[0],
+  budget: BUDGET_OPTIONS[0],
+  timeline: TIMELINE_OPTIONS[0],
+  referenceUrl: "",
+  message: "",
+  attachments: [],
+};
+
 export function RequestForm() {
+  const { data } = useSnapshot();
   const create = useCreateRequest();
-  const [form, setForm] = React.useState<RequestInput>({
-    name: "",
-    whatsapp: "",
-    email: "",
-    projectType: PROJECT_TYPES[0],
-    message: "",
-    attachments: [],
-  });
+  const [form, setForm] = React.useState<RequestInput>(emptyForm);
   const [files, setFiles] = React.useState<File[]>([]);
   const [error, setError] = React.useState("");
   const [done, setDone] = React.useState(false);
@@ -62,6 +81,28 @@ export function RequestForm() {
     }
   }
 
+  if (data && data.profile.acceptingProjects === false) {
+    return (
+      <Card className="mx-auto max-w-xl p-10 text-center">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-amber-50 text-amber-600 dark:bg-amber-500/10">
+          <Clock3 className="h-8 w-8" />
+        </div>
+        <h3 className="mt-4 text-lg font-semibold">Sedang tidak menerima project baru</h3>
+        <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
+          Slot pengerjaan sedang penuh. Form request untuk sementara ditutup — cek lagi nanti, atau kalau mendesak
+          bisa langsung hubungi lewat WhatsApp.
+        </p>
+        {data.profile.linkedin && waLink(data.profile.linkedin) && (
+          <a href={waLink(data.profile.linkedin)} target="_blank" rel="noopener noreferrer" className="mt-5 inline-block">
+            <Button variant="primary">
+              <MessageCircle className="h-4 w-4" /> Chat WhatsApp
+            </Button>
+          </a>
+        )}
+      </Card>
+    );
+  }
+
   if (done) {
     return (
       <Card className="mx-auto max-w-xl p-10 text-center">
@@ -78,7 +119,7 @@ export function RequestForm() {
           className="mx-auto mt-5"
           onClick={() => {
             setDone(false);
-            setForm({ name: "", whatsapp: "", email: "", projectType: PROJECT_TYPES[0], message: "", attachments: [] });
+            setForm(emptyForm);
             setFiles([]);
           }}
         >
@@ -116,6 +157,9 @@ export function RequestForm() {
           <Field label="Email (opsional)">
             <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="you@email.com" />
           </Field>
+          <Field label="Perusahaan / Brand (opsional)">
+            <Input value={form.company} onChange={(e) => set("company", e.target.value)} placeholder="PT / brand kamu" />
+          </Field>
           <Field label="Jenis Project">
             <Select value={form.projectType} onChange={(e) => set("projectType", e.target.value)}>
               {PROJECT_TYPES.map((t) => (
@@ -123,14 +167,35 @@ export function RequestForm() {
               ))}
             </Select>
           </Field>
+          <Field label="Estimasi Budget">
+            <Select value={form.budget} onChange={(e) => set("budget", e.target.value)}>
+              {BUDGET_OPTIONS.map((b) => (
+                <option key={b}>{b}</option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Target Timeline">
+            <Select value={form.timeline} onChange={(e) => set("timeline", e.target.value)}>
+              {TIMELINE_OPTIONS.map((t) => (
+                <option key={t}>{t}</option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Link Referensi (opsional)" className="sm:col-span-2">
+            <Input
+              value={form.referenceUrl}
+              onChange={(e) => set("referenceUrl", e.target.value)}
+              placeholder="https://... (situs/desain yang jadi acuan)"
+            />
+          </Field>
         </div>
 
         <Field label="Deskripsi kebutuhan / request *">
           <Textarea
             value={form.message}
             onChange={(e) => set("message", e.target.value)}
-            placeholder="Ceritakan apa yang kamu butuhkan — fitur, timeline, referensi, dll."
-            className="min-h-[120px]"
+            placeholder="Ceritakan lebih detail apa yang kamu butuhkan — fitur, alur, target pengguna, kendala saat ini, dll. Makin detail, makin cepat saya bisa kasih estimasi yang akurat."
+            className="min-h-[140px]"
           />
         </Field>
 
