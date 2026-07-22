@@ -237,10 +237,17 @@ class SupabaseProvider implements DataProvider {
     return c;
   }
 
+  // Anon (public site) only ever receives these columns — the DB also enforces this
+  // at the column-privilege level, so a raw API call can't pull the rest either.
+  private static readonly PUBLIC_PROJECT_COLUMNS =
+    "id,name,emoji,status,priority,startDate,deadline,techStack,progress,publicSummary,isPublic,createdAt,updatedAt";
+
   async getSnapshot(): Promise<Snapshot> {
     const db = this.db;
+    const { data: session } = await db.auth.getSession();
+    const projectColumns = session.session ? "*" : SupabaseProvider.PUBLIC_PROJECT_COLUMNS;
     const [projects, tasks, profile, requests, events, activity] = await Promise.all([
-      db.from("projects").select("*").order("createdAt", { ascending: false }),
+      db.from("projects").select(projectColumns as "*").order("createdAt", { ascending: false }),
       db.from("tasks").select("*").order("createdAt", { ascending: true }),
       db.from("profile").select("*").eq("id", 1).maybeSingle(),
       db.from("requests").select("*").order("createdAt", { ascending: false }),

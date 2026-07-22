@@ -23,6 +23,8 @@ import {
   Gauge,
   Layers,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight as ChevronRightIcon,
   ListChecks,
   CheckCheck,
 } from "lucide-react";
@@ -41,7 +43,7 @@ import { TechStackChart, CompletionGauge } from "@/components/public-charts";
 import { useSnapshot } from "@/lib/queries";
 import { useTheme } from "@/components/providers";
 import type { Project, Snapshot, Task } from "@/lib/types";
-import { TASK_STATUS_META, formatDate, cn, waLink } from "@/lib/utils";
+import { STATUS_META, TASK_STATUS_META, formatDate, cn, waLink } from "@/lib/utils";
 
 const SERVICES: { icon: LucideIcon; title: string; desc: string }[] = [
   { icon: Globe, title: "Web Development", desc: "Website & web app modern, cepat, dan scalable." },
@@ -79,7 +81,6 @@ export default function PublicHome() {
   const planning = publicProjects.filter((p) => p.status === "Planning");
   const doneTasks = publicTasks.filter((t) => t.status === "Done").length;
   const completion = publicTasks.length ? (doneTasks / publicTasks.length) * 100 : 0;
-  const journey = [...publicProjects].sort((a, b) => (b.startDate || "").localeCompare(a.startDate || ""));
   const allTech = Array.from(new Set([...(profile?.skills ?? []), ...publicProjects.flatMap((p) => p.techStack)]));
   const pubSnapshot: Snapshot | null = data ? { ...data, projects: publicProjects, tasks: publicTasks } : null;
 
@@ -219,26 +220,40 @@ export default function PublicHome() {
           </div>
         </section>
 
-        {/* ===== SHOWCASE ===== */}
+        {/* ===== SHOWCASE (kanban) ===== */}
         <section id="work" className="scroll-mt-20 py-6">
           <Reveal>
             <SectionTitle eyebrow="Portfolio" title="Karya & project terbaru" />
           </Reveal>
-          <div className="mt-6">
-            <Showcase icon={Flame} title="Sedang Dikerjakan" projects={active} tasks={publicTasks} empty="Belum ada project aktif." />
-            {planning.length > 0 && <Showcase icon={ClipboardList} title="Dalam Perencanaan" projects={planning} tasks={publicTasks} />}
-            {completed.length > 0 && <Showcase icon={CheckCircle2} title="Baru Selesai" projects={completed} tasks={publicTasks} />}
-          </div>
+          <Card className="mt-6 grid grid-cols-1 gap-6 p-4 lg:grid-cols-3 lg:items-start lg:gap-0 lg:divide-x lg:divide-border/60 lg:p-5">
+            <KanbanColumn icon={Flame} title="Sedang Dikerjakan" projects={active} empty="Belum ada project aktif.">
+              {(p, i) => (
+                <Reveal key={p.id} delay={i * 60}>
+                  <PublicProjectCard project={p} tasks={publicTasks.filter((t) => t.projectId === p.id)} />
+                </Reveal>
+              )}
+            </KanbanColumn>
+            <KanbanColumn icon={ClipboardList} title="Dalam Perencanaan" projects={planning} empty="Belum ada project dalam perencanaan.">
+              {(p, i) => (
+                <Reveal key={p.id} delay={i * 60}>
+                  <PublicProjectCard project={p} tasks={publicTasks.filter((t) => t.projectId === p.id)} />
+                </Reveal>
+              )}
+            </KanbanColumn>
+            <KanbanColumn icon={CheckCircle2} title="Baru Selesai" projects={completed} empty="Belum ada project selesai.">
+              {(p) => <CompactProjectRow key={p.id} project={p} />}
+            </KanbanColumn>
+          </Card>
         </section>
 
-        {/* ===== TIMELINE ===== */}
-        {journey.length > 0 && (
+        {/* ===== TIMELINE (gantt, active projects) ===== */}
+        {active.some((p) => p.startDate && p.deadline) && (
           <section className="scroll-mt-20 py-10">
             <Reveal>
-              <SectionTitle eyebrow="Perjalanan" title="Timeline project" />
+              <SectionTitle eyebrow="Perjalanan" title="Timeline Project Aktif" />
             </Reveal>
-            <div className="mx-auto mt-8 max-w-2xl">
-              <Timeline projects={journey} />
+            <div className="mt-8">
+              <ActiveProjectCalendar projects={active} />
             </div>
           </section>
         )}
@@ -371,50 +386,168 @@ function Social({ href, icon }: { href: string; icon: React.ReactNode }) {
   );
 }
 
-function Showcase({ icon: Icon, title, projects, tasks, empty }: { icon: LucideIcon; title: string; projects: Project[]; tasks: Task[]; empty?: string }) {
-  if (projects.length === 0 && !empty) return null;
+/** Fixed lane height so all 3 columns line up in one neat box regardless of item count — overflow scrolls within the lane. */
+const KANBAN_LANE_HEIGHT = "560px";
+
+function KanbanColumn({
+  icon: Icon,
+  title,
+  projects,
+  empty,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  projects: Project[];
+  empty: string;
+  children: (project: Project, index: number) => React.ReactNode;
+}) {
   return (
-    <div className="py-4">
-      <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-        <Icon className="h-5 w-5 text-primary" /> {title}
-      </h3>
+    <div className="flex flex-col lg:px-4 lg:first:pl-0 lg:last:pr-0">
+      <div className="mb-3 flex items-center justify-between px-1.5 pt-1">
+        <span className="flex items-center gap-2 text-sm font-semibold">
+          <Icon className="h-4 w-4 text-primary" /> {title}
+        </span>
+        <span className="rounded-full bg-card px-2 py-0.5 text-xs text-muted-foreground">{projects.length}</span>
+      </div>
       {projects.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border/70 px-4 py-8 text-center text-sm text-muted-foreground">{empty}</p>
+        <p className="rounded-xl border border-dashed border-border/70 px-3 py-6 text-center text-xs text-muted-foreground">{empty}</p>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((p, i) => (
-            <Reveal key={p.id} delay={i * 60}>
-              <PublicProjectCard project={p} tasks={tasks.filter((t) => t.projectId === p.id)} />
-            </Reveal>
-          ))}
+        <div className="space-y-2.5 overflow-y-auto pr-1" style={{ maxHeight: KANBAN_LANE_HEIGHT }}>
+          {projects.map((p, i) => children(p, i))}
         </div>
       )}
     </div>
   );
 }
 
-function Timeline({ projects }: { projects: Project[] }) {
+/** Gantt-style horizontal bars — one line per active project, positioned along a shared date axis. */
+const CAL_MONTHS = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+const CAL_WEEKDAYS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+const addDays = (d: Date, n: number) => {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+};
+const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+
+/** Month-calendar view — each active project draws a horizontal line across the day cells it spans. */
+function ActiveProjectCalendar({ projects }: { projects: Project[] }) {
+  const rows = projects.filter((p) => p.startDate && p.deadline);
+  const [view, setView] = React.useState(() => {
+    const n = new Date();
+    return { y: n.getFullYear(), m: n.getMonth() };
+  });
+
+  if (rows.length === 0) return null;
+
+  const { y, m } = view;
+  const firstOfMonth = new Date(y, m, 1);
+  const leadDays = (firstOfMonth.getDay() + 6) % 7;
+  const gridStart = addDays(firstOfMonth, -leadDays);
+  const weeks = Array.from({ length: 6 }, (_, w) => Array.from({ length: 7 }, (_, d) => addDays(gridStart, w * 7 + d)));
+  const today = new Date();
+
   return (
-    <ol className="relative ml-3 border-l border-border/70">
-      {projects.map((p, i) => (
-        <Reveal key={p.id} delay={i * 70}>
-          <li className="mb-6 ml-6">
-            <span className="absolute -left-[14px] mt-1">
-              <ProjectIcon iconKey={p.emoji} size="sm" />
-            </span>
-            <div className="flex flex-wrap items-center gap-2">
-              <h4 className="font-semibold">{p.name}</h4>
-              <StatusBadge status={p.status} />
-            </div>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {formatDate(p.startDate)} → {formatDate(p.deadline)}
-              {p.client ? ` · ${p.client}` : ""}
-            </p>
-            {p.description && <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>}
-          </li>
-        </Reveal>
-      ))}
-    </ol>
+    <Card className="overflow-x-auto p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-sm font-semibold">{CAL_MONTHS[m]} {y}</h3>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setView((v) => { const d = new Date(v.y, v.m - 1, 1); return { y: d.getFullYear(), m: d.getMonth() }; })}
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setView((v) => { const d = new Date(v.y, v.m + 1, 1); return { y: d.getFullYear(), m: d.getMonth() }; })}
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted"
+          >
+            <ChevronRightIcon className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="min-w-[640px]">
+        <div className="grid grid-cols-7 text-center text-[11px] font-medium text-muted-foreground">
+          {CAL_WEEKDAYS.map((w) => (
+            <div key={w} className="py-1">{w}</div>
+          ))}
+        </div>
+
+        <div className="space-y-1">
+          {weeks.map((week, wi) => {
+            const weekStart = week[0];
+            const weekEnd = week[6];
+            const segments = rows
+              .map((p) => {
+                const start = new Date(p.startDate + "T00:00:00");
+                const end = new Date(p.deadline + "T00:00:00");
+                if (end < weekStart || start > weekEnd) return null;
+                const segStart = start < weekStart ? weekStart : start;
+                const segEnd = end > weekEnd ? weekEnd : end;
+                const startCol = week.findIndex((d) => sameDay(d, segStart));
+                const endCol = week.findIndex((d) => sameDay(d, segEnd));
+                return { project: p, startCol, endCol, isFirstWeek: sameDay(start, segStart) };
+              })
+              .filter((s): s is NonNullable<typeof s> => s !== null);
+
+            // if this month view has no active project at all touching this week, skip the empty lane space
+            const laneCount = rows.length;
+
+            return (
+              <div key={wi}>
+                <div className="grid grid-cols-7">
+                  {week.map((d, di) => (
+                    <div
+                      key={di}
+                      className={cn(
+                        "flex h-7 items-start justify-center text-xs",
+                        d.getMonth() !== m ? "text-muted-foreground/35" : "font-medium",
+                        sameDay(d, today) && "text-primary",
+                      )}
+                    >
+                      {d.getDate()}
+                    </div>
+                  ))}
+                </div>
+                {segments.length > 0 && (
+                  <div className="relative grid grid-cols-7 gap-y-1 pb-1.5" style={{ minHeight: laneCount * 20 }}>
+                    {segments.map((seg) => (
+                      <div
+                        key={seg.project.id}
+                        className="mx-0.5 flex h-4 items-center overflow-hidden rounded-full px-2"
+                        style={{
+                          gridColumn: `${seg.startCol + 1} / ${seg.endCol + 2}`,
+                          gridRow: rows.indexOf(seg.project) + 1,
+                          background: STATUS_META[seg.project.status].chart,
+                        }}
+                        title={`${seg.project.name} · ${formatDate(seg.project.startDate)} → ${formatDate(seg.project.deadline)} · ${seg.project.progress}%`}
+                      >
+                        {seg.isFirstWeek && (
+                          <span className="truncate text-[10px] font-medium text-white">
+                            {seg.project.name} · {seg.project.progress}%
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-3 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+        {rows.map((p) => (
+          <span key={p.id} className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full" style={{ background: STATUS_META[p.status].chart }} />
+            {p.name}
+          </span>
+        ))}
+      </div>
+    </Card>
   );
 }
 
@@ -445,7 +578,7 @@ function PublicProjectCard({ project, tasks }: { project: Project; tasks: Task[]
         </div>
         <StatusBadge status={project.status} />
       </div>
-      {project.description && <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{project.description}</p>}
+      {project.publicSummary && <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{project.publicSummary}</p>}
       <div className="mt-3 flex flex-wrap gap-1.5">
         {project.techStack.slice(0, 4).map((t) => (
           <Chip key={t}>{t}</Chip>
@@ -464,5 +597,15 @@ function PublicProjectCard({ project, tasks }: { project: Project; tasks: Task[]
         ))}
       </div>
     </Card>
+  );
+}
+
+/** Compact title-only preview — used for the "Done" kanban column so it doesn't eat screen space. */
+function CompactProjectRow({ project }: { project: Project }) {
+  return (
+    <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-[hsl(var(--card)/0.6)] px-3 py-2">
+      <ProjectIcon iconKey={project.emoji} size="sm" />
+      <span className="min-w-0 flex-1 truncate text-sm font-medium">{project.name}</span>
+    </div>
   );
 }

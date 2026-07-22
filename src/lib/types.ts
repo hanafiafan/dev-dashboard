@@ -39,6 +39,9 @@ export interface Project {
   techStack: string[];
   client: string;
   progress: number; // 0..100
+  /** Short, safe-for-anyone summary shown on the public landing page. */
+  publicSummary: string;
+  /** Full internal detail — only ever fetched/shown to the logged-in owner. */
   description: string;
   repoUrl: string;
   figmaUrl: string;

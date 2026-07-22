@@ -42,7 +42,8 @@ create table if not exists public.projects (
   "techStack"   text[] not null default '{}',
   client        text not null default '',
   progress      int  not null default 0,
-  description   text not null default '',
+  "publicSummary" text not null default '',  -- safe-for-anyone summary shown publicly
+  description   text not null default '',     -- full internal detail, owner-only
   "repoUrl"     text not null default '',
   "figmaUrl"    text not null default '',
   "stagingUrl"  text not null default '',
@@ -98,15 +99,30 @@ alter table public.tasks    enable row level security;
 alter table public.requests enable row level security;
 alter table public.activity enable row level security;
 
--- Public read for the showcase tables
-create policy "public read profile"  on public.profile  for select to anon, authenticated using (true);
-create policy "public read projects" on public.projects for select to anon, authenticated using (true);
-create policy "public read tasks"    on public.tasks    for select to anon, authenticated using (true);
+-- Public read for the showcase tables — anon only ever sees isPublic rows
+create policy "public read profile"  on public.profile  for select to anon using (true);
+create policy "public read projects" on public.projects for select to anon
+  using ("isPublic" = true);
+create policy "public read tasks"    on public.tasks    for select to anon
+  using (exists (select 1 from public.projects p where p.id = "projectId" and p."isPublic" = true));
 
--- Owner (any authenticated user) full write on showcase tables
-create policy "owner write profile"  on public.profile  for all to authenticated using (true) with check (true);
-create policy "owner write projects" on public.projects for all to authenticated using (true) with check (true);
-create policy "owner write tasks"    on public.tasks    for all to authenticated using (true) with check (true);
+-- Column-level lockdown: even for isPublic projects, anon can never read
+-- description/client/links — owner-only regardless of row visibility.
+-- IMPORTANT: `revoke select (col) ... from anon` alone does NOT work — Supabase's
+-- blanket `grant select on all tables to anon` still allows full-row reads
+-- through that separate table-level grant. You must revoke the whole table-level
+-- grant first, then grant back only the safe columns.
+revoke select on public.projects from anon;
+grant select (id, "name", emoji, status, priority, "startDate", deadline, "techStack", progress, "publicSummary", "isPublic", "createdAt", "updatedAt")
+  on public.projects to anon;
+
+-- Owner (any authenticated user) full read/write on showcase tables
+create policy "owner read profile"   on public.profile  for select to authenticated using (true);
+create policy "owner write profile"  on public.profile  for all    to authenticated using (true) with check (true);
+create policy "owner read projects"  on public.projects for select to authenticated using (true);
+create policy "owner write projects" on public.projects for all    to authenticated using (true) with check (true);
+create policy "owner read tasks"     on public.tasks    for select to authenticated using (true);
+create policy "owner write tasks"    on public.tasks    for all    to authenticated using (true) with check (true);
 
 -- Requests: anyone may submit; only owner may read/manage
 create policy "anyone submit request" on public.requests for insert to anon, authenticated with check (true);

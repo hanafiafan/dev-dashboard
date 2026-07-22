@@ -18,6 +18,7 @@ const empty: ProjectInput = {
   techStack: [],
   client: "",
   progress: 0,
+  publicSummary: "",
   description: "",
   repoUrl: "",
   figmaUrl: "",
@@ -169,8 +170,16 @@ export function ProjectDialog({
             <span className="w-10 text-right text-sm font-semibold">{form.progress}%</span>
           </div>
         </Field>
-        <Field label="Description" className="col-span-2">
-          <Textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Ringkasan project…" />
+        <Field label="Ringkasan Publik (aman dilihat siapa saja)" className="col-span-2">
+          <Textarea
+            value={form.publicSummary}
+            onChange={(e) => set("publicSummary", e.target.value)}
+            placeholder="1-2 kalimat singkat, tanpa nama orang/klien atau info sensitif…"
+            className="min-h-[60px]"
+          />
+        </Field>
+        <Field label="Description (detail internal — hanya kamu yang lihat)" className="col-span-2">
+          <Textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Detail lengkap, catatan, risiko, dll." />
         </Field>
         <Field label="Repository URL">
           <Input value={form.repoUrl} onChange={(e) => set("repoUrl", e.target.value)} placeholder="https://github.com/…" />
